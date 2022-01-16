@@ -1,0 +1,48 @@
+{
+	"enabled": true,
+	"settings": {
+		"checkRadius": {
+			"type": "slider",
+			"value": 200,
+			"min": 100,
+			"max": 1500,
+			"title": "Radius of search for colliders"
+		},
+		"collidersToDraw": {
+			"type": "slider",
+			"value": 200,
+			"min": 100,
+			"max": 1500,
+			"title": "Amount of colliders to draw"
+		},
+		"checkFrequency": 4,
+		"isToDraw": {
+			"type": "toggle",
+			"value": true,
+			"yes": "Yes",
+			"no": "No",
+			"title": "Draw Colliders?"
+		},
+		"drawBoundingBoxes": {
+			"type": "toggle",
+			"value": true,
+			"yes": "Yes",
+			"no": "No",
+			"title": "Draw Bounding Boxes?"
+		},
+		"drawTriggers": {
+			"type": "toggle",
+			"value": true,
+			"yes": "Yes",
+			"no": "No",
+			"title": "Draw Triggers?"
+		},
+		"drawPhysicalColliders": {
+			"type": "toggle",
+			"value": true,
+			"yes": "Yes",
+			"no": "No",
+			"title": "Draw Physical Colliders?"
+		}
+	}
+}
