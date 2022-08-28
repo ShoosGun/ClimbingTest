@@ -133,7 +133,7 @@ namespace ModTemplate
 
             GL.Begin(GL.LINES);
 
-            float angleStep = 2f * Mathf.PI / resolution;
+            float angleStep = 360f / resolution;
 
             Vector3 radiusVector = Quaternion.AngleAxis(0f, normal) * Vector3.forward * radius;
 
@@ -145,8 +145,8 @@ namespace ModTemplate
             {
                 GL.Color(color);
 
-                GL.Vertex3(vertex1.x, vertex1.y, vertex1.z);
-                GL.Vertex3(vertex2.x, vertex2.y, vertex2.z);
+                GL.Vertex(vertex1);
+                GL.Vertex(vertex2);
 
                 vertex1 = vertex2;
                 radiusVector = Quaternion.AngleAxis(angleStep, normal) * Vector3.forward * radius;
@@ -218,7 +218,7 @@ namespace ModTemplate
             //Connecting Lines
             GL.Begin(GL.LINES);
 
-            float angleStep = 2f * Mathf.PI / resolution;
+            float angleStep = 360f / resolution;
             for (int i = 0; i <= resolution; i++)
             {
                 Vector3 radiusVector = Quaternion.AngleAxis(angleStep*i, direction) * Vector3.forward;
@@ -226,8 +226,8 @@ namespace ModTemplate
                 Vector3 vertex2 = radiusVector*coneRadiusEnd + coneEnd;
 
                 GL.Color(color);
-                GL.Vertex3(vertex1.x, vertex1.y, vertex1.z);
-                GL.Vertex3(vertex2.x, vertex2.y, vertex2.z);
+                GL.Vertex(vertex1);
+                GL.Vertex(vertex2);
             }
             GL.End();
 
