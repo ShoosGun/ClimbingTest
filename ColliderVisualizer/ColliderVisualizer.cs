@@ -14,6 +14,9 @@ namespace ModTemplate
         static Color TriggerVolumeColor = Color.green;
         static Color ColliderColor = Color.blue;
         static Color BoundsColor = Color.red;
+        static Color ShapeBoundColor = Color.magenta;
+        static Color DetectorShapeColor = Color.white;
+        static Color VolumeShapeColor = Color.cyan;
 
         public const int MAX_COLLIDERS_TO_DRAW = 50;
         private Collider[] collidersToDraw = new Collider[MAX_COLLIDERS_TO_DRAW];
@@ -26,6 +29,9 @@ namespace ModTemplate
         public bool DrawBoundingBoxes = true;
         public bool DrawTriggers = true;
         public bool DrawColliders = true;
+        public bool DrawShapeBounds = true;
+        public bool DrawShapeDetector = true;
+        public bool DrawShapeVolume = true;
 
         private void Start()
         {
@@ -81,53 +87,140 @@ namespace ModTemplate
 
             CreateLineMaterial();
             lineMaterial.SetPass(0);
-
-            //Collider Bounds
             if (DrawBoundingBoxes)
             {
-                GL.PushMatrix();
-                GL.MultMatrix(Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one));
-
-                for (int i = 0; i < amountToDraw; i++)
-                {
-                    if (collidersToDraw[i] != null)
-                        GLHelpers.DrawWireframeCube(collidersToDraw[i].bounds.size, collidersToDraw[i].bounds.center - collidersToDraw[i].bounds.extents, BoundsColor);
-                }
-                GL.PopMatrix();
+                RenderBoundingBoxes(collidersToDraw, amountToDraw);
             }
-            //Collider 
+            RenderColliders(collidersToDraw, amountToDraw, DrawTriggers, DrawColliders);
+            if (DrawShapeBounds)
+            {
+                ShapeManager.Layer layer = ShapeManager._detectors;
+                RenderShapeBounds(layer._array, layer.Count);
+
+                ShapeManager.Layer[] layers = ShapeManager._volumes;
+                for(int i = 0; i < layers.Length; i++) 
+                {
+                    RenderShapeBounds(layers[i]._array, layers[i].Count);
+                }
+            }
+            if (DrawShapeDetector)
+            {
+                ShapeManager.Layer layer = ShapeManager._detectors;
+                RenderShapes(layer._array, layer.Count, DetectorShapeColor);
+            }
+            if (DrawShapeVolume)
+            {
+                ShapeManager.Layer[] layers = ShapeManager._volumes;
+                for (int i = 0; i < layers.Length; i++)
+                {
+                    RenderShapes(layers[i]._array, layers[i].Count, VolumeShapeColor);
+                }
+            }
+        }
+        private void RenderBoundingBoxes(Collider[] colliders, int amountToDraw) 
+        {
+            GL.PushMatrix();
+            GL.MultMatrix(Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one));
+
             for (int i = 0; i < amountToDraw; i++)
             {
-                if (collidersToDraw[i] != null 
-                    && (collidersToDraw[i].isTrigger && DrawTriggers || !collidersToDraw[i].isTrigger && DrawColliders))
+                if (colliders[i] != null)
+                    GLHelpers.DrawSimpleWireframeCube(colliders[i].bounds.size, colliders[i].bounds.center - colliders[i].bounds.extents, BoundsColor);
+            }
+            GL.PopMatrix();
+        }
+    
+        private void RenderColliders(Collider[] colliders, int amountToDraw, bool drawTriggers, bool drawColliders) 
+        {
+            for (int i = 0; i < amountToDraw; i++)
+            {
+                if (colliders[i] != null
+                    && (colliders[i].isTrigger && drawTriggers || !colliders[i].isTrigger && drawColliders))
                 {
-                    Color colorToUse = collidersToDraw[i].isTrigger ? TriggerVolumeColor : ColliderColor;
-                    Type colliderType = collidersToDraw[i].GetType();
+                    Color colorToUse = colliders[i].isTrigger ? TriggerVolumeColor : ColliderColor;
+                    Type colliderType = colliders[i].GetType();
                     if (colliderType == typeof(BoxCollider))
                     {
-                        BoxCollider box = (BoxCollider)collidersToDraw[i];
+                        BoxCollider box = (BoxCollider)colliders[i];
                         GL.PushMatrix();
-                        GL.MultMatrix(collidersToDraw[i].transform.localToWorldMatrix);
-                        GLHelpers.DrawWireframeCube(box.size, box.center - box.size / 2f, colorToUse);
+                        GL.MultMatrix(colliders[i].transform.localToWorldMatrix);
+                        GLHelpers.DrawSimpleWireframeCube(box.size, box.center - box.size / 2f, colorToUse);
                         GL.PopMatrix();
                     }
                     else if (colliderType == typeof(SphereCollider))
                     {
-                        SphereCollider sphere = (SphereCollider)collidersToDraw[i];
+                        SphereCollider sphere = (SphereCollider)colliders[i];
                         GL.PushMatrix();
-                        GL.MultMatrix(collidersToDraw[i].transform.localToWorldMatrix);
+                        GL.MultMatrix(colliders[i].transform.localToWorldMatrix);
                         GLHelpers.DrawSimpleWireframeSphere(sphere.radius, sphere.center, colorToUse, 12);
                         GL.PopMatrix();
                     }
                     else if (colliderType == typeof(CapsuleCollider))
                     {
-                        CapsuleCollider capsule = (CapsuleCollider)collidersToDraw[i];
+                        CapsuleCollider capsule = (CapsuleCollider)colliders[i];
                         GL.PushMatrix();
-                        GL.MultMatrix(collidersToDraw[i].transform.localToWorldMatrix);
-                        GLHelpers.DrawSimpleWireframeCapsule(capsule.radius, capsule.height, capsule.center, colorToUse, 12);
+                        GL.MultMatrix(colliders[i].transform.localToWorldMatrix);
+                        GLHelpers.DrawSimpleWireframeCapsule(capsule.radius, capsule.height, colliders[i].transform.up, capsule.center, colorToUse, 12);
                         GL.PopMatrix();
                     }
                 }
+            }
+        }
+        
+        private void RenderShapeBounds(ShapeManager.ShapeData[] shapes, int count) 
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (shapes[i] != null)
+                {
+                    Color colorToUse = ShapeBoundColor;
+                    ShapeManager.ShapeData bounds = shapes[i];
+                    GLHelpers.DrawSimpleWireframeSphere(bounds.worldBoundsRadius, bounds.worldBoundsCenter, colorToUse, 12);
+                }
+            }
+        }
+        private void RenderShapes(ShapeManager.ShapeData[] shapes, int count, Color colorToUse)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (shapes[i] != null)
+                {
+                    RenderShape(shapes[i], colorToUse);
+                }
+            }
+        }
+        private void RenderShape(ShapeManager.ShapeData shape, Color colorToUse) 
+        {
+            switch (shape.type)
+            {
+                case ShapeManager.ShapeData.Type.Sphere:
+                    ShapeManager.ShapeData.SphereShapeData sphereData = shape.sphere;
+                    GLHelpers.DrawSimpleWireframeSphere(sphereData.worldRadius, sphereData.worldCenter, colorToUse, 12);
+                    break;
+
+                case ShapeManager.ShapeData.Type.Hemisphere:
+                    break;
+
+                case ShapeManager.ShapeData.Type.Capsule:
+                    ShapeManager.ShapeData.CapsuleShapeData capsuleData = shape.capsule;
+                    GLHelpers.DrawWireframeCapsule(capsuleData.worldRadius, capsuleData.worldStartPoint, capsuleData.worldEndPoint, colorToUse, 12);
+                    break;
+
+                case ShapeManager.ShapeData.Type.Hemicapsule:
+                    break;
+
+                case ShapeManager.ShapeData.Type.Cylinder:
+                    ShapeManager.ShapeData.CapsuleShapeData cylinderData = shape.capsule;
+                    GLHelpers.DrawWireframeCone(cylinderData.worldRadius, cylinderData.worldRadius, cylinderData.worldStartPoint, cylinderData.worldEndPoint, colorToUse, 12);
+                    break;
+
+                case ShapeManager.ShapeData.Type.Box:
+                    break;
+                
+                case ShapeManager.ShapeData.Type.Cone:
+                    ShapeManager.ShapeData.ConeShapeData coneData = shape.cone;
+                    GLHelpers.DrawWireframeCone(coneData.worldStartRadius, coneData.worldEndRadius, coneData.worldStartPoint, coneData.worldEndPoint, colorToUse, 12);
+                    break;
             }
         }
     }

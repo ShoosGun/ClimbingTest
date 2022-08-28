@@ -21,7 +21,7 @@
 			"value": true,
 			"yes": "Yes",
 			"no": "No",
-			"title": "Draw Colliders?"
+			"title": "Draw?"
 		},
 		"drawBoundingBoxes": {
 			"type": "toggle",
@@ -43,6 +43,29 @@
 			"yes": "Yes",
 			"no": "No",
 			"title": "Draw Physical Colliders?"
+		},
+		"drawShapeBounds": {
+			"type": "toggle",
+			"value": true,
+			"yes": "Yes",
+			"no": "No",
+			"title": "Draw Shape Bounds?"
+		},
+
+		"drawShapeDetector": {
+			"type": "toggle",
+			"value": true,
+			"yes": "Yes",
+			"no": "No",
+			"title": "Draw Shape Detectors?"
+		},
+
+		"drawShapeVolume": {
+			"type": "toggle",
+			"value": true,
+			"yes": "Yes",
+			"no": "No",
+			"title": "Draw Shape Volumes?"
 		}
 	}
 }

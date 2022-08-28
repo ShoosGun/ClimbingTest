@@ -27,7 +27,4 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="ModTemplate.csproj.user" />
-  </ItemGroup>
 </Project>
