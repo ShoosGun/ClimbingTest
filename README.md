@@ -1,6 +1,6 @@
 # Collider Visualizer
 
-<img src="https://github.com/ShoosGun/ColliderVisualizer/blob/master/pictures/colliderVisualizer.png" alt="Collider Visualizer">
+# ![Collider Visualizer](pictures/colliderVisualizer.png)
 
 This is a mod for Outer Wilds which allows the player to visualize diferent kinds of colliders that exist in the game.
 
