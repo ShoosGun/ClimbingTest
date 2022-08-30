@@ -1,7 +1,7 @@
 ﻿using OWML.ModHelper;
 using OWML.Common;
 using UnityEngine;
-namespace ModTemplate
+namespace ColliderVisualizer
 {
     public class ColliderVisualizerLoader : ModBehaviour
     {
@@ -18,6 +18,7 @@ namespace ModTemplate
         bool isToDrawShapeDetector = true;
         bool isToDrawShapeVolume = true;
         float checkPeriod = 0.25f;
+        //TODO criar compatibilidade com o UnityExplorer para que, quando o objeto com as colisões seja selecionado, fazer com que apenas elas apareçam
         private void Start()
         {
             visualizer = Camera.main.gameObject.AddComponent<ColliderVisualizer>();

@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace ModTemplate
+namespace ColliderVisualizer
 {
     public class ColliderVisualizer : MonoBehaviour
     {
@@ -35,6 +35,8 @@ namespace ModTemplate
         {
             StartCoroutine("UpdateCollidersListWithDelay");
         }
+
+        //TODO fazer um patch e atualizar essa lista com a destruição e construção do Collider
         private void UpdateCollidersList(float radius)
         {
             Transform reference;
@@ -104,15 +106,21 @@ namespace ModTemplate
             if (DrawShapeDetector)
             {
                 ShapeManager.Layer layer = ShapeManager._detectors;
+                //GL.PushMatrix();
+                //GL.MultMatrix(Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one));
                 RenderShapes(layer._array, layer.Count, DetectorShapeColor);
+                //GL.PopMatrix();
             }
             if (DrawShapeVolume)
             {
                 ShapeManager.Layer[] layers = ShapeManager._volumes;
+                //GL.PushMatrix();
+                //GL.MultMatrix(Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one));
                 for (int i = 0; i < layers.Length; i++)
                 {
                     RenderShapes(layers[i]._array, layers[i].Count, VolumeShapeColor);
                 }
+                //GL.PopMatrix();
             }
         }
         private void RenderBoundingBoxes(Collider[] colliders, int amountToDraw) 
@@ -150,7 +158,7 @@ namespace ModTemplate
                         SphereCollider sphere = (SphereCollider)colliders[i];
                         GL.PushMatrix();
                         GL.MultMatrix(colliders[i].transform.localToWorldMatrix);
-                        GLHelpers.DrawSimpleWireframeSphere(sphere.radius, sphere.center, colorToUse, 12);
+                        GLHelpers.DrawWireframeSphere(sphere.radius, sphere.center, colliders[i].transform.forward, colliders[i].transform.up, colorToUse, 12);
                         GL.PopMatrix();
                     }
                     else if (colliderType == typeof(CapsuleCollider))
@@ -165,18 +173,20 @@ namespace ModTemplate
             }
         }
         
-        private void RenderShapeBounds(ShapeManager.ShapeData[] shapes, int count) 
+        private void RenderShapeBounds(ShapeManager.ShapeData[] shapes, int count)
         {
+            Color colorToUse = ShapeBoundColor;
             for (int i = 0; i < count; i++)
             {
                 if (shapes[i] != null)
                 {
-                    Color colorToUse = ShapeBoundColor;
                     ShapeManager.ShapeData bounds = shapes[i];
-                    GLHelpers.DrawSimpleWireframeSphere(bounds.worldBoundsRadius, bounds.worldBoundsCenter, colorToUse, 12);
+                    Transform t = bounds.shape.transform;
+                    GLHelpers.DrawWireframeSphere(bounds.worldBoundsRadius, bounds.worldBoundsCenter, t.forward, t.up,  colorToUse, 12);
                 }
             }
         }
+        //TODO, esses dados apenas são atualizados quando necessarios, ou seja, temos que pegar essas informações do Shape mesmo
         private void RenderShapes(ShapeManager.ShapeData[] shapes, int count, Color colorToUse)
         {
             for (int i = 0; i < count; i++)
@@ -192,32 +202,37 @@ namespace ModTemplate
             switch (shape.type)
             {
                 case ShapeManager.ShapeData.Type.Sphere:
-                    ShapeManager.ShapeData.SphereShapeData sphereData = shape.sphere;
-                    GLHelpers.DrawSimpleWireframeSphere(sphereData.worldRadius, sphereData.worldCenter, colorToUse, 12);
+                    SphereShape sphereShape = shape.sphere.sphereShape;
+                    Vector3 sphereCenter = ShapeUtil.Sphere.CalcWorldSpaceCenter(sphereShape);
+                    float sphereRadius = ShapeUtil.Sphere.CalcWorldSpaceRadius(sphereShape);
+                    GLHelpers.DrawWireframeSphere(sphereRadius, sphereCenter, sphereShape.transform.forward, sphereShape.transform.up, Color.Lerp(colorToUse, Color.blue, 0.5f), 12);
                     break;
 
                 case ShapeManager.ShapeData.Type.Hemisphere:
                     break;
 
                 case ShapeManager.ShapeData.Type.Capsule:
-                    ShapeManager.ShapeData.CapsuleShapeData capsuleData = shape.capsule;
-                    GLHelpers.DrawWireframeCapsule(capsuleData.worldRadius, capsuleData.worldStartPoint, capsuleData.worldEndPoint, colorToUse, 12);
+                    CapsuleShape capsuleShape = shape.capsule.capsuleShape;
+                    ShapeUtil.Capsule.CalcWorldSpaceEndpoints(capsuleShape, out float capsuleRadius, out Vector3 capsuleStart, out Vector3 capsuleEnd);
+                    GLHelpers.DrawWireframeCapsule(capsuleRadius, capsuleStart, capsuleEnd, Color.Lerp(colorToUse, Color.green, 0.5f), 12);
                     break;
 
                 case ShapeManager.ShapeData.Type.Hemicapsule:
                     break;
 
                 case ShapeManager.ShapeData.Type.Cylinder:
-                    ShapeManager.ShapeData.CapsuleShapeData cylinderData = shape.capsule;
-                    GLHelpers.DrawWireframeCone(cylinderData.worldRadius, cylinderData.worldRadius, cylinderData.worldStartPoint, cylinderData.worldEndPoint, colorToUse, 12);
+                    CylinderShape cylinderShape = shape.cylinder.cylinderShape;
+                    ShapeUtil.Cylinder.CalcWorldSpaceEndpoints(cylinderShape, out float cylinderRadius, out Vector3 cylinderStart, out Vector3 cylinderEnd);
+                    GLHelpers.DrawWireframeCone(cylinderRadius, cylinderRadius, cylinderStart, cylinderEnd, Color.Lerp(colorToUse, Color.magenta, 0.5f), 12);
                     break;
 
                 case ShapeManager.ShapeData.Type.Box:
                     break;
                 
                 case ShapeManager.ShapeData.Type.Cone:
-                    ShapeManager.ShapeData.ConeShapeData coneData = shape.cone;
-                    GLHelpers.DrawWireframeCone(coneData.worldStartRadius, coneData.worldEndRadius, coneData.worldStartPoint, coneData.worldEndPoint, colorToUse, 12);
+                    ConeShape coneShape = shape.cone.coneShape;
+                    ShapeUtil.Cone.CalcWorldSpaceEndpoints(coneShape, out float coneRadiusStart,out float coneRadiusEnd, out Vector3 coneStart, out Vector3 coneEnd);
+                    GLHelpers.DrawWireframeCone(coneRadiusStart, coneRadiusEnd, coneStart, coneEnd,Color.Lerp(colorToUse,Color.red,0.5f), 12);
                     break;
             }
         }

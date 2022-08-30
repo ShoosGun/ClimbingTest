@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-namespace ModTemplate
+namespace ColliderVisualizer
 {
     public static class GLHelpers
     {
@@ -126,33 +126,33 @@ namespace ModTemplate
         //    GL.End();
         //}
 
-        public static void DrawWireframeCircle(float radius, Vector3 normal, Vector3 offset, Color color, int resolution = 3)
+        //TODO adicionar DrawWireframeHalfCircle
+        public static void DrawWireframeCircle(float radius, Vector3 normal, Vector3 up, Vector3 offset, Color color, int resolution = 3)
         {
-            if (resolution < 3 && radius <= 0f)
+            if (resolution < 3 || radius <= 0f)
                 return;
+            normal = normal.normalized;
+            up = up.normalized;
 
-            GL.Begin(GL.LINES);
+            GL.Begin(GL.LINE_STRIP);
 
-            float angleStep = 360f / resolution;
+            float angleStep = 2f * Mathf.PI / resolution;
 
-            Vector3 radiusVector = Quaternion.AngleAxis(0f, normal) * Vector3.forward * radius;
-
-            Vector3 vertex1 = radiusVector + offset;
-            radiusVector = Quaternion.AngleAxis(angleStep, normal) * Vector3.forward * radius;
-            Vector3 vertex2 = radiusVector + offset;
-
+            GL.Color(color);
+            Vector3 rotationVector = Vector3MathUtils.GetRotationVector(normal, up);
             for (int i = 0; i <= resolution + 1; i++)
             {
-                GL.Color(color);
-
-                GL.Vertex(vertex1);
-                GL.Vertex(vertex2);
-
-                vertex1 = vertex2;
-                radiusVector = Quaternion.AngleAxis(angleStep, normal) * Vector3.forward * radius;
-                vertex2 = radiusVector + offset;
+                Vector3 radiusVector = Vector3MathUtils.GetRotatedVectorComponent(rotationVector, up, angleStep * i);
+                GL.Vertex(radiusVector * radius + offset);
             }
             GL.End();
+        }
+        public static void DrawWireframeSphere(float radius, Vector3 offset,Vector3 foward, Vector3 up, Color color, int resolution = 3)
+        {
+            Vector3 right = Vector3.Cross(foward, up);
+            DrawWireframeCircle(radius, up, foward, offset, color, resolution);
+            DrawWireframeCircle(radius, foward, right, offset, color, resolution);
+            DrawWireframeCircle(radius, right, up, offset, color, resolution);
         }
         public static void DrawSimpleWireframeSphere(float radius, Vector3 offset, Color color, int resolution = 3)
         {
@@ -193,37 +193,68 @@ namespace ModTemplate
         }
         public static void DrawWireframeCapsule(float radius, Vector3 startPoint, Vector3 endPoint, Color color, int resolution = 3)
         {
-            DrawWireframeCircle(radius, startPoint - endPoint, (startPoint + endPoint)/2, color, resolution);
+            Vector3 direction = startPoint - endPoint;
+            Vector3 randomUpVector = Vector3MathUtils.GetArbitraryPerpendicularVector(direction);
+            
             //Top and bottom Spheres
-            DrawSimpleWireframeSphere(radius, startPoint, color, resolution);
-            DrawSimpleWireframeSphere(radius, endPoint, color, resolution);
+            DrawWireframeSphere(radius, startPoint, direction, randomUpVector, color, resolution);
+            DrawWireframeSphere(radius, endPoint, direction, randomUpVector, color, resolution);
+
+            GL.Begin(GL.LINES);
+            float angleStep = 2f * Mathf.PI / resolution;
+            Vector3 rotationVector = Vector3MathUtils.GetRotationVector(direction.normalized, randomUpVector);
+            for (int i = 0; i <= resolution; i++)
+            {
+                Vector3 radiusVector = Vector3MathUtils.GetRotatedVectorComponent(rotationVector,randomUpVector, angleStep * i);
+                Vector3 vertex1 = radiusVector * radius + startPoint;
+                Vector3 vertex2 = radiusVector * radius + endPoint;
+
+                GL.Color(color);
+                GL.Vertex(vertex1);
+                GL.Vertex(vertex2);
+            }
+            GL.End();
         }
-            public static void DrawSimpleWireframeCapsule(float radius, float height, Vector3 up, Vector3 offset, Color color, int resolution = 3)
+        public static void DrawSimpleWireframeCapsule(float radius, float height, Vector3 up, Vector3 offset, Color color, int resolution = 3)
         {
-            //Middle Circle
-            DrawWireframeCircle(radius, up, offset, color, resolution);
+            Vector3 randomFowardVector = Vector3MathUtils.GetArbitraryPerpendicularVector(up);
             //Top and bottom Spheres
-            DrawSimpleWireframeSphere(radius, new Vector3(0f, 0f, height / 2f) + offset, color, resolution);
-            DrawSimpleWireframeSphere(radius, new Vector3(0f, 0f, height / -2f) + offset, color, resolution);
+            DrawWireframeSphere(radius, offset - up*height/2f, randomFowardVector, up, color, resolution);
+            DrawWireframeSphere(radius, offset + up * height / 2f, randomFowardVector, up, color, resolution);
+
+            GL.Begin(GL.LINES); 
+            float angleStep = 2f * Mathf.PI / resolution;
+            Vector3 rotationVector = Vector3MathUtils.GetRotationVector(up.normalized, randomFowardVector);
+            for (int i = 0; i <= resolution; i++)
+            {
+                Vector3 radiusVector = Vector3MathUtils.GetRotatedVectorComponent(rotationVector, randomFowardVector, angleStep * i);
+                Vector3 vertex1 = radiusVector * radius + offset - up * height / 2f;
+                Vector3 vertex2 = radiusVector * radius + offset + up * height / 2f;
+
+                GL.Color(color);
+                GL.Vertex(vertex1);
+                GL.Vertex(vertex2);
+            }
+            GL.End();
         }
         //Can be also used as a wireframe cylinder!
-        //TODO this isn't drawing correctly, the lines from the circle aren't following the circles
         public static void DrawWireframeCone(float coneRadiusStart, float coneRadiusEnd, Vector3 coneStart, Vector3 coneEnd, Color color, int resolution = 3)
         {
             Vector3 direction = coneEnd - coneStart;
+            Vector3 randomFowardVector = Vector3MathUtils.GetArbitraryPerpendicularVector(direction);
             //Start Circle
-            DrawWireframeCircle(coneRadiusStart, direction, coneStart, color, resolution);
+            DrawWireframeCircle(coneRadiusStart, direction, randomFowardVector, coneStart, color, resolution);
             //End Circle
-            DrawWireframeCircle(coneRadiusEnd, direction, coneEnd, color, resolution);
+            DrawWireframeCircle(coneRadiusEnd, direction, randomFowardVector, coneEnd, color, resolution);
             //Connecting Lines
             GL.Begin(GL.LINES);
-
-            float angleStep = 360f / resolution;
+            float angleStep = 2f * Mathf.PI / resolution;
+            Vector3 rotationVector = Vector3MathUtils.GetRotationVector(direction.normalized, randomFowardVector);
             for (int i = 0; i <= resolution; i++)
             {
-                Vector3 radiusVector = Quaternion.AngleAxis(angleStep*i, direction) * Vector3.forward;
-                Vector3 vertex1 = radiusVector*coneRadiusStart + coneStart;
-                Vector3 vertex2 = radiusVector*coneRadiusEnd + coneEnd;
+                Vector3 radiusVector = Vector3MathUtils.GetRotatedVectorComponent(rotationVector, randomFowardVector, angleStep * i);
+                Vector3 vertex1 = radiusVector * coneRadiusStart + coneStart;
+                Vector3 vertex2 = radiusVector * coneRadiusEnd + coneEnd;
 
                 GL.Color(color);
                 GL.Vertex(vertex1);
