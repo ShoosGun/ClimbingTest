@@ -23,6 +23,7 @@
 			"no": "No",
 			"title": "Draw?"
 		},
+		"toggleDrawKB": "f9",
 		"drawBoundingBoxes": {
 			"type": "toggle",
 			"value": true,
@@ -59,7 +60,7 @@
 			"no": "No",
 			"title": "Draw Shape Detectors?"
 		},
-
+		"shapeLayers": "1-2-3-4",
 		"drawShapeVolume": {
 			"type": "toggle",
 			"value": true,

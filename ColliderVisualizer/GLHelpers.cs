@@ -64,70 +64,43 @@ namespace ColliderVisualizer
 
             GL.End();
         }
-        //public static void DrawWireframeCube(Vector3[] corners, Vector3 offset, Color color)
-        //{
-        //    GL.Begin(GL.LINES);
+        public static void DrawWireframeCube(Vector3 foward, Vector3 up, Vector3 right, Vector3 offset, Color color)
+        {
+            Vector3[] vertex = new Vector3[4];
+            vertex[0] = (foward + right)/2f;
+            vertex[1] = (-foward + right) / 2f;
+            vertex[2] = (-foward - right) / 2f;
+            vertex[3] = (foward - right) / 2f;
 
-        //    //From the 0,0,0 corner
-        //    GL.Color(color);
-        //    GL.Vertex3(offset[0], offset[1], offset[2]);
-        //    GL.Vertex3(size[0] + offset[0], offset[1], offset[2]);
+            GL.Begin(GL.LINE_STRIP);
+            GL.Color(color);
+            for(int i = 0; i < 4; i++) 
+            {
+                GL.Vertex(vertex[i] + offset);
+            }
+            GL.Vertex(vertex[0] + offset);
+            GL.End();
 
-        //    GL.Color(color);
-        //    GL.Vertex3(offset[0], offset[1], offset[2]);
-        //    GL.Vertex3(offset[0], size[1] + offset[1], offset[2]);
+            GL.Begin(GL.LINE_STRIP);
+            GL.Color(color);
+            for (int i = 0; i < 4; i++)
+            {
+                GL.Vertex(vertex[i] + offset + up);
+            }
+            GL.Vertex(vertex[0] + offset + up);
+            GL.End();
 
-        //    GL.Color(color);
-        //    GL.Vertex3(offset[0], offset[1], offset[2]);
-        //    GL.Vertex3(offset[0], offset[1], size[2] + offset[2]);
+            GL.Begin(GL.LINES);
+            for (int i = 0; i < 4; i++)
+            {
+                GL.Color(color);
+                GL.Vertex(vertex[i] + offset);
+                GL.Vertex(vertex[i] + offset + up);
+            }
+            GL.End();
+        }
 
-        //    //From the size corner
-
-        //    GL.Color(color);
-        //    GL.Vertex3(size[0] + offset[0], size[1] + offset[1], size[2] + offset[2]);
-        //    GL.Vertex3(offset[0], size[1] + offset[1], size[2] + offset[2]);
-
-        //    GL.Color(color);
-        //    GL.Vertex3(size[0] + offset[0], size[1] + offset[1], size[2] + offset[2]);
-        //    GL.Vertex3(size[0] + offset[0], offset[1], size[2] + offset[2]);
-
-        //    GL.Color(color);
-        //    GL.Vertex3(size[0] + offset[0], size[1] + offset[1], size[2] + offset[2]);
-        //    GL.Vertex3(size[0] + offset[0], size[1] + offset[1], offset[2]);
-
-        //    //Lines That are Left
-
-        //    GL.Color(color);
-        //    GL.Vertex3(size[0] + offset[0], offset[1], offset[2]);
-        //    GL.Vertex3(size[0] + offset[0], size[1] + offset[1], offset[2]);
-
-        //    GL.Color(color);
-        //    GL.Vertex3(size[0] + offset[0], offset[1], offset[2]);
-        //    GL.Vertex3(size[0] + offset[0], offset[1], size[2] + offset[2]);
-
-
-        //    GL.Color(color);
-        //    GL.Vertex3(offset[0], size[1] + offset[1], offset[2]);
-        //    GL.Vertex3(offset[0], size[1] + offset[1], size[2] + offset[2]);
-
-        //    GL.Color(color);
-        //    GL.Vertex3(offset[0], size[1] + offset[1], offset[2]);
-        //    GL.Vertex3(size[0] + offset[0], size[1] + offset[1], offset[2]);
-
-
-        //    GL.Color(color);
-        //    GL.Vertex3(offset[0], offset[1], size[2] + offset[2]);
-        //    GL.Vertex3(offset[0], size[1] + offset[1], size[2] + offset[2]);
-
-        //    GL.Color(color);
-        //    GL.Vertex3(offset[0], offset[1], size[2] + offset[2]);
-        //    GL.Vertex3(size[0] + offset[0], offset[1], size[2] + offset[2]);
-
-        //    GL.End();
-        //}
-
-        //TODO adicionar DrawWireframeHalfCircle
-        public static void DrawWireframeCircle(float radius, Vector3 normal, Vector3 up, Vector3 offset, Color color, int resolution = 3)
+        public static void DrawWireframeCircle(float radius, Vector3 normal, Vector3 up, Vector3 offset, Color color, int resolution = 3, float startAngle =0f, float endAngle = 2f*Mathf.PI, bool isWholeCircle = true)
         {
             if (resolution < 3 || radius <= 0f)
                 return;
@@ -136,13 +109,14 @@ namespace ColliderVisualizer
 
             GL.Begin(GL.LINE_STRIP);
 
-            float angleStep = 2f * Mathf.PI / resolution;
+            float angleStep = (endAngle - startAngle) / resolution;
+            int aditionalSteps = isWholeCircle ? 1 : 0;
 
             GL.Color(color);
             Vector3 rotationVector = Vector3MathUtils.GetRotationVector(normal, up);
-            for (int i = 0; i <= resolution + 1; i++)
+            for (int i = 0; i <= resolution + aditionalSteps; i++)
             {
-                Vector3 radiusVector = Vector3MathUtils.GetRotatedVectorComponent(rotationVector, up, angleStep * i);
+                Vector3 radiusVector = Vector3MathUtils.GetRotatedVectorComponent(rotationVector, up, angleStep * i + startAngle);
                 GL.Vertex(radiusVector * radius + offset);
             }
             GL.End();
@@ -153,6 +127,13 @@ namespace ColliderVisualizer
             DrawWireframeCircle(radius, up, foward, offset, color, resolution);
             DrawWireframeCircle(radius, foward, right, offset, color, resolution);
             DrawWireframeCircle(radius, right, up, offset, color, resolution);
+        }
+        public static void DrawWireframeHemisphere(float radius, Vector3 offset, Vector3 foward, Vector3 up, Color color, int resolution = 3)
+        {
+            Vector3 right = Vector3.Cross(foward, up);
+            DrawWireframeCircle(radius, up, foward, offset, color, resolution, -Mathf.PI / 2f, Mathf.PI / 2f, false);
+            DrawWireframeCircle(radius, foward, right, offset, color, resolution);
+            DrawWireframeCircle(radius, right, foward, offset, color, resolution, -Mathf.PI / 2f, Mathf.PI / 2f, false);
         }
         public static void DrawSimpleWireframeSphere(float radius, Vector3 offset, Color color, int resolution = 3)
         {
@@ -195,10 +176,10 @@ namespace ColliderVisualizer
         {
             Vector3 direction = startPoint - endPoint;
             Vector3 randomUpVector = Vector3MathUtils.GetArbitraryPerpendicularVector(direction);
-            
+
             //Top and bottom Spheres
-            DrawWireframeSphere(radius, startPoint, direction, randomUpVector, color, resolution);
-            DrawWireframeSphere(radius, endPoint, direction, randomUpVector, color, resolution);
+            DrawWireframeHemisphere(radius, startPoint, direction, randomUpVector, color, resolution);
+            DrawWireframeHemisphere(radius, endPoint, -direction, -randomUpVector, color, resolution);
 
             GL.Begin(GL.LINES);
             float angleStep = 2f * Mathf.PI / resolution;

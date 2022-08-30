@@ -21,19 +21,32 @@ namespace ColliderVisualizer
         private int amountToDraw = 0;
 
         public bool IsToDraw = false;
+        public string ToggleDrawKBCommand = "f9";
 
         public float CheckPeriod = 0.25f;
 
         public bool DrawBoundingBoxes = true;
         public bool DrawTriggers = true;
         public bool DrawColliders = true;
+
         public bool DrawShapeBounds = true;
         public bool DrawShapeDetector = true;
         public bool DrawShapeVolume = true;
+        public int[] ShapeLayersToDraw = new int[] { 1, 2, 3, 4 };
 
         private void Start()
         {
             StartCoroutine("UpdateCollidersListWithDelay");
+        }
+        private void Update() 
+        {
+            if (Event.current != null)
+            {
+                if (Event.current.Equals(Event.KeyboardEvent(ToggleDrawKBCommand)))
+                {
+                    IsToDraw = !IsToDraw;
+                }
+            }
         }
 
         //TODO fazer um patch e atualizar essa lista com a destruição e construção do Collider
@@ -106,21 +119,19 @@ namespace ColliderVisualizer
             if (DrawShapeDetector)
             {
                 ShapeManager.Layer layer = ShapeManager._detectors;
-                //GL.PushMatrix();
-                //GL.MultMatrix(Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one));
                 RenderShapes(layer._array, layer.Count, DetectorShapeColor);
-                //GL.PopMatrix();
             }
             if (DrawShapeVolume)
             {
                 ShapeManager.Layer[] layers = ShapeManager._volumes;
-                //GL.PushMatrix();
-                //GL.MultMatrix(Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one));
-                for (int i = 0; i < layers.Length; i++)
+                for (int i = 0; i < ShapeLayersToDraw.Length; i++)
                 {
-                    RenderShapes(layers[i]._array, layers[i].Count, VolumeShapeColor);
+                    int layer = ShapeLayersToDraw[i] - 1;
+                    if (layer >= 0 && layer < layers.Length)
+                    {
+                        RenderShapes(layers[layer]._array, layers[layer].Count, VolumeShapeColor);
+                    }
                 }
-                //GL.PopMatrix();
             }
         }
         private void RenderBoundingBoxes(Collider[] colliders, int amountToDraw) 
@@ -186,7 +197,6 @@ namespace ColliderVisualizer
                 }
             }
         }
-        //TODO, esses dados apenas são atualizados quando necessarios, ou seja, temos que pegar essas informações do Shape mesmo
         private void RenderShapes(ShapeManager.ShapeData[] shapes, int count, Color colorToUse)
         {
             for (int i = 0; i < count; i++)
@@ -209,6 +219,11 @@ namespace ColliderVisualizer
                     break;
 
                 case ShapeManager.ShapeData.Type.Hemisphere:
+                    HemisphereShape hemisphereShape = shape.hemisphere.hemisphereShape;
+                    Vector3 hemisphereCenter = ShapeUtil.Sphere.CalcWorldSpaceCenter(hemisphereShape);
+                    float hemisphereRadius = ShapeUtil.Sphere.CalcWorldSpaceRadius(hemisphereShape);
+                    Vector3 hemisphereUp = ShapeUtil.Hemisphere.CalcWorldSpaceAxis(hemisphereShape);
+                    GLHelpers.DrawWireframeHemisphere(hemisphereRadius, hemisphereCenter,hemisphereShape.transform.up, hemisphereUp, Color.Lerp(colorToUse, Color.white, 0.5f), 12);
                     break;
 
                 case ShapeManager.ShapeData.Type.Capsule:
@@ -218,6 +233,9 @@ namespace ColliderVisualizer
                     break;
 
                 case ShapeManager.ShapeData.Type.Hemicapsule:
+                    HemicapsuleShape hemicapsuleShape = shape.hemicapsule.hemicapsuleShape;
+                    ShapeUtil.Capsule.CalcWorldSpaceEndpoints(hemicapsuleShape, out float hemicapsuleRadius, out Vector3 hemicapsuleStart, out Vector3 hemicapsuleEnd);
+                    GLHelpers.DrawWireframeCapsule(hemicapsuleRadius, hemicapsuleStart, hemicapsuleEnd, Color.Lerp(colorToUse, Color.grey, 0.5f), 12);
                     break;
 
                 case ShapeManager.ShapeData.Type.Cylinder:
@@ -227,6 +245,11 @@ namespace ColliderVisualizer
                     break;
 
                 case ShapeManager.ShapeData.Type.Box:
+                    BoxShape boxShape = shape.box.boxShape;
+                    Vector3[] boxAxes = new Vector3[3];
+                    Vector3[] verts = new Vector3[8];
+                    ShapeUtil.Box.CalcWorldSpaceData(boxShape, out Vector3 boxCenter, out Vector3 boxSize, ref boxAxes,ref verts);
+                    GLHelpers.DrawWireframeCube(boxAxes[2] * boxSize.z, boxAxes[1]*boxSize.y,boxAxes[0] * boxSize.x , boxCenter, Color.Lerp(colorToUse, Color.black, 0.5f));
                     break;
                 
                 case ShapeManager.ShapeData.Type.Cone:
