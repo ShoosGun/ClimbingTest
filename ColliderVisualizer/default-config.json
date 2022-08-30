@@ -1,6 +1,14 @@
 {
 	"enabled": true,
 	"settings": {
+		"isToDraw": {
+			"type": "toggle",
+			"value": true,
+			"yes": "Yes",
+			"no": "No",
+			"title": "Draw?"
+		},
+		"toggleDrawKB": "f9",
 		"checkRadius": {
 			"type": "slider",
 			"value": 200,
@@ -16,14 +24,6 @@
 			"title": "Amount of colliders to draw"
 		},
 		"checkFrequency": 4,
-		"isToDraw": {
-			"type": "toggle",
-			"value": true,
-			"yes": "Yes",
-			"no": "No",
-			"title": "Draw?"
-		},
-		"toggleDrawKB": "f9",
 		"drawBoundingBoxes": {
 			"type": "toggle",
 			"value": true,
@@ -52,7 +52,6 @@
 			"no": "No",
 			"title": "Draw Shape Bounds?"
 		},
-
 		"drawShapeDetector": {
 			"type": "toggle",
 			"value": true,

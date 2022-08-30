@@ -76,26 +76,26 @@ namespace ColliderVisualizer
             GL.Color(color);
             for(int i = 0; i < 4; i++) 
             {
-                GL.Vertex(vertex[i] + offset);
+                GL.Vertex(vertex[i] + offset - up / 2f);
             }
-            GL.Vertex(vertex[0] + offset);
+            GL.Vertex(vertex[0] - up / 2f); ;
             GL.End();
 
             GL.Begin(GL.LINE_STRIP);
             GL.Color(color);
             for (int i = 0; i < 4; i++)
             {
-                GL.Vertex(vertex[i] + offset + up);
+                GL.Vertex(vertex[i] + offset + up / 2f);
             }
-            GL.Vertex(vertex[0] + offset + up);
+            GL.Vertex(vertex[0] + offset + up / 2f);
             GL.End();
 
             GL.Begin(GL.LINES);
             for (int i = 0; i < 4; i++)
             {
                 GL.Color(color);
-                GL.Vertex(vertex[i] + offset);
-                GL.Vertex(vertex[i] + offset + up);
+                GL.Vertex(vertex[i] + offset - up / 2f);
+                GL.Vertex(vertex[i] + offset + up / 2f);
             }
             GL.End();
         }

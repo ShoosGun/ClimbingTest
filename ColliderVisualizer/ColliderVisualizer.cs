@@ -142,7 +142,7 @@ namespace ColliderVisualizer
             for (int i = 0; i < amountToDraw; i++)
             {
                 if (colliders[i] != null)
-                    GLHelpers.DrawSimpleWireframeCube(colliders[i].bounds.size, colliders[i].bounds.center - colliders[i].bounds.extents, BoundsColor);
+                    GLHelpers.DrawWireframeCube(Vector3.forward * colliders[i].bounds.size.z, Vector3.up * colliders[i].bounds.size.y, Vector3.right * colliders[i].bounds.size.x, colliders[i].bounds.center, BoundsColor);
             }
             GL.PopMatrix();
         }
@@ -161,7 +161,7 @@ namespace ColliderVisualizer
                         BoxCollider box = (BoxCollider)colliders[i];
                         GL.PushMatrix();
                         GL.MultMatrix(colliders[i].transform.localToWorldMatrix);
-                        GLHelpers.DrawSimpleWireframeCube(box.size, box.center - box.size / 2f, colorToUse);
+                        GLHelpers.DrawWireframeCube(Vector3.forward * box.size.z, Vector3.up * box.size.y, Vector3.right * box.size.z, box.center, colorToUse);
                         GL.PopMatrix();
                     }
                     else if (colliderType == typeof(SphereCollider))
@@ -169,7 +169,7 @@ namespace ColliderVisualizer
                         SphereCollider sphere = (SphereCollider)colliders[i];
                         GL.PushMatrix();
                         GL.MultMatrix(colliders[i].transform.localToWorldMatrix);
-                        GLHelpers.DrawWireframeSphere(sphere.radius, sphere.center, colliders[i].transform.forward, colliders[i].transform.up, colorToUse, 12);
+                        GLHelpers.DrawWireframeSphere(sphere.radius, sphere.center, Vector3.forward, Vector3.up, colorToUse, 12);
                         GL.PopMatrix();
                     }
                     else if (colliderType == typeof(CapsuleCollider))
@@ -177,7 +177,7 @@ namespace ColliderVisualizer
                         CapsuleCollider capsule = (CapsuleCollider)colliders[i];
                         GL.PushMatrix();
                         GL.MultMatrix(colliders[i].transform.localToWorldMatrix);
-                        GLHelpers.DrawSimpleWireframeCapsule(capsule.radius, capsule.height, colliders[i].transform.up, capsule.center, colorToUse, 12);
+                        GLHelpers.DrawWireframeCapsule(capsule.radius, capsule.center + capsule.height * Vector3.up / 2f, capsule.center - capsule.height * Vector3.up / 2f, colorToUse, 12);
                         GL.PopMatrix();
                     }
                 }
