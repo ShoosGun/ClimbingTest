@@ -78,7 +78,7 @@ namespace ColliderVisualizer
             {
                 GL.Vertex(vertex[i] + offset - up / 2f);
             }
-            GL.Vertex(vertex[0] - up / 2f); ;
+            GL.Vertex(vertex[0] + offset - up / 2f); ;
             GL.End();
 
             GL.Begin(GL.LINE_STRIP);
