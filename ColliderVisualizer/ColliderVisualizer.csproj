@@ -27,4 +27,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="GizmosLibrary">
+      <HintPath>..\..\..\..\AppData\Roaming\OuterWildsModManager\OWML\Mods\Locochoco.GizmosLibrary\GizmosLibrary.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

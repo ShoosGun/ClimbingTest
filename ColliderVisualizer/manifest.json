@@ -3,6 +3,9 @@
   "author": "Locochoco",
   "name": "Collider Visualizer",
   "uniqueName": "Locochoco.ColliderVisualizer",
-  "version": "0.1.3",
-  "owmlVersion": "2.0.0"
+  "version": "0.1.4",
+  "owmlVersion": "2.0.0",
+  "dependencies": [
+    "Locochoco.GizmosLibrary"
+  ]
 }
